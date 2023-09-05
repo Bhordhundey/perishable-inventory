@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch './src/**/*.ts' --exec ts-node ./src/index.ts",
     "build": "tsc",
-    "start": "NODE_ENV=default node ./src/index.js",
+    "start": "NODE_ENV=default ts-node ./src/index.ts",
     "test:watch": "npm run test -- --watchAll",
     "test": " NODE_ENV=test nyc  --reporter text   ts-mocha --debug=8101 './src/modules/**/tests/*.spec.ts' --exit",
     "docs": "apidoc -i ./src/modules -i ./docs/apidoc/definitions -o public/apidoc --single  docs/apidoc/definitions/",
