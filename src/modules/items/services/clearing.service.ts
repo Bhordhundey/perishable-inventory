@@ -1,8 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../../../lib/prisma';
 
 async function clearExpiredRecords() {
+
   try {
     const currentDate = new Date();
     await prisma.inventory.deleteMany({
@@ -19,7 +18,9 @@ async function clearExpiredRecords() {
         ],
       },
     });
-    console.log('Expired records and records with null expiry cleared');
+    console.log(
+		"Expired records and records with null expiry cleared"
+	);
   } catch (error) {
     console.error('Error clearing records:', error);
   }

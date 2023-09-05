@@ -43,4 +43,11 @@ const port = process.env.PORT || 3000;
 }
 
 // Schedule the clearing function to run daily at midnight
-cron.schedule('0 0 * * *', clearExpiredRecords);
+cron.schedule(
+	"0 1 * * *",
+	clearExpiredRecords,
+	{
+		scheduled: true,
+		timezone: "America/Sao_Paulo",
+	},
+);
