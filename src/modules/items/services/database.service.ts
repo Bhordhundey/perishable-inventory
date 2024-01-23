@@ -1,5 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { Item, UpdateItem } from "../dtos/item.dto";
+import { BadRequestError } from "../../../errors/bad-request-error";
 
 export class DatabaseService {
 	private prisma: PrismaClient;
@@ -13,8 +14,7 @@ export class DatabaseService {
 		quantity: number,
 		expiry: string,
 	): Promise<Item> {
-	
-		const expiryDate = new Date(Date.now() + parseInt(expiry));
+		const expiryDate = new Date(parseInt(expiry));
 
 		const itemData = await this.prisma.inventory.create({
 			data: {
@@ -26,31 +26,25 @@ export class DatabaseService {
 		return itemData;
 	}
 
-	async sellInventory(item: string) {
-		const items = await this.prisma.inventory.aggregate({
-			where: {
-				item,
-				expiry: { gte: new Date() }, // Expiry not reached yet
-			},
-			_sum: { quantity: true },
-		});
-
-		return items;
+	async getNonExpiredQuantity(tx: Prisma.TransactionClient, item: string) {
+		try {
+				// Lock the rows for the specified item and filter by expiry date
+				const nonExpiredQuantity = await tx.inventory.aggregate({
+					where: {
+						item,
+						expiry: { gte: new Date() }, // Expiry not reached yet
+					},
+					_sum: { quantity: true },
+				});
+				return nonExpiredQuantity;
+		} catch (err) {
+			// Handle the rollback...
+			throw new BadRequestError("Unable to sell item. Please try again");
+		}
 	}
 
-	async getNonExpiredQuantity(item: string) {
-		const nonExpiredQuantity = await this.prisma.inventory.aggregate({
-			where: {
-				item,
-				expiry: { gte: new Date() }, // Expiry not reached yet
-			},
-			_sum: { quantity: true },
-		});
-		return nonExpiredQuantity;
-	}
-
-	async findInventories(item: string) {
-		const inventories = await this.prisma.inventory.findMany({
+	async findInventories(tx: any, item: string) {
+		const inventories = await tx.inventory.findMany({
 			where: {
 				item,
 				expiry: { gte: new Date() }, // Expiry not reached yet
@@ -60,21 +54,26 @@ export class DatabaseService {
 		return inventories;
 	}
 
-	async UpdateInventory(data: UpdateItem) {
-		const inventory = await this.prisma.inventory.update({
-			where: { id: data.id },
-			data: { quantity: data.quantity, expiry: data.expiry },
-		});
-		return inventory;
+	async UpdateInventory(tx: Prisma.TransactionClient, data: UpdateItem) {
+		try {
+			const inventory = await tx.inventory.update({
+				where: { id: data.id },
+				data: { quantity: data.quantity, expiry: data.expiry },
+			});
+			return inventory;
+		} catch (err) {
+			// Handle the rollback...
+			throw new BadRequestError("Unable to sell item. Please try again");
+		}
 	}
 
-	async findInventory(data: UpdateItem) {
-		const inventory = await this.prisma.inventory.findFirst({
+	async findInventory(tx: Prisma.TransactionClient, data: UpdateItem) {
+		const inventory = await tx.inventory.findFirst({
 			where: {
 				item: data.item,
 				expiry: { gte: new Date() },
 			},
-			orderBy: { expiry: "desc" },
+			orderBy: { expiry: "asc" },
 			select: { expiry: true },
 		});
 		return inventory;

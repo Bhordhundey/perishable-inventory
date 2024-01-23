@@ -22,12 +22,25 @@ app.all("*", async (req, res) => {
 
 app.use(errorHandler);
 
+const numCPUs = os.cpus().length;
+
+// Handle high concurrency
+if (cluster.isPrimary) {
+	// Fork workers for each CPU core
+	for (let i = 0; i < numCPUs; i++) {
+		cluster.fork();
+	}
+
+	cluster.on("exit", (worker, code, signal) => {
+		console.log(`Worker ${worker.process.pid} died`);
+	});
+} else {
 
 const port = process.env.PORT || 3000;
 	app.listen(port, () => {
 		console.log(`Server is listening on port ${port}`);
 	});
-
+}
 
 // Schedule the clearing function to run daily at midnight
 cron.schedule(

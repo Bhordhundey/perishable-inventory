@@ -27,7 +27,7 @@ router.get(
 	"/:item/quantity",
 	GetItemsValidator,
 	validateRequest,
-	itemsController.getExpiredItems,
+	itemsController.getNonExpiredItems,
 );
 
 
