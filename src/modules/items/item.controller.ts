@@ -12,6 +12,10 @@ const addItems = async (req: Request, res: Response) => {
 	const { quantity, expiry } = req.body;
 
 	try {
+		// Check if the expiry date is in the past
+		if (new Date(parseInt(expiry)).getTime() < Date.now()) {
+			throw new BadRequestError("Expiry date cannot be in the past");
+		}
 		await DbService.addInventory(item, quantity, expiry);
 		res.status(200).json({});
 	} catch (error) {
