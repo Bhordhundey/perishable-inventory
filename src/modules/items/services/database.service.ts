@@ -39,7 +39,7 @@ export class DatabaseService {
 				return nonExpiredQuantity;
 		} catch (err) {
 			// Handle the rollback...
-			throw new BadRequestError("Unable to sell item. Please try again");
+			throw new BadRequestError("Unable to fetch items. Please try again");
 		}
 	}
 
@@ -51,6 +51,8 @@ export class DatabaseService {
 			},
 			orderBy: { expiry: "asc" },
 		});
+		console.log("===inventories===", inventories);
+		
 		return inventories;
 	}
 

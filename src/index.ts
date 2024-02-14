@@ -48,6 +48,6 @@ cron.schedule(
 	clearExpiredRecords,
 	{
 		scheduled: true,
-		timezone: "America/Sao_Paulo",
+		timezone: "Europe/London",
 	},
 );

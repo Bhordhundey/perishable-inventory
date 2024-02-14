@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { BadRequestError } from "../../errors/bad-request-error";
 import { DatabaseService } from "./services/database.service";
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
+import utilHelper from "../../util/helper";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import prisma from "../../lib/prisma";
 
 const DbService = new DatabaseService();
 
@@ -13,8 +15,10 @@ const addItems = async (req: Request, res: Response) => {
 
 	try {
 		// Check if the expiry date is in the past
-		if (new Date(parseInt(expiry)).getTime() < Date.now()) {
-			throw new BadRequestError("Expiry date cannot be in the past");
+		const isExpiryValid = utilHelper.checkExpiryValidity(parseInt(expiry));
+
+		if (!isExpiryValid) {
+			throw new BadRequestError("Expiry timestamp cannot be in the past");
 		}
 		await DbService.addInventory(item, quantity, expiry);
 		res.status(200).json({});
@@ -121,4 +125,6 @@ export default {
 	addItems,
 	sellItems,
 	getNonExpiredItems,
+	prisma,
+	DatabaseService,
 };

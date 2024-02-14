@@ -4,7 +4,7 @@ const epochConverter = (date: string) => {
 }
 
 // Check for expiry timestamp
-const checkExpiry = (timestamp: number) => {
+const checkExpiryValidity = (timestamp: number) => {
 	const currentDate = new Date();
 	const expiryDate = new Date(timestamp);
 	return currentDate.getTime() < expiryDate.getTime();
@@ -12,5 +12,5 @@ const checkExpiry = (timestamp: number) => {
 
 export default {
 	epochConverter,
-	checkExpiry
-}
+	checkExpiryValidity,
+};
